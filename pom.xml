@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.example</groupId>
+  <artifactId>roi-cm-test</artifactId>
+  <packaging>pom</packaging>
+  <version>1</version>
+  <name>TestWebApp Maven Webapp Project</name>
+  <url>http://maven.apache.org</url>
+  <modules>
+    <module>TestWebApp</module>
+    <module>testapp3</module>
+  </modules>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/ansible_tree/roles/roi-cm-test-webapp/files/</outputDirectory>
+              <resources>          
+                <resource>
+                  <directory>TestWebApp/target</directory>
+                  <includes>
+                    <include>TestWebApp.war</include>
+                  </includes>
+                </resource>
+              </resources>              
+            </configuration>            
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build> 
+</project>
+

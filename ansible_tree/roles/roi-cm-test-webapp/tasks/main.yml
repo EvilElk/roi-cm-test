@@ -1,0 +1,5 @@
+---
+  - name: roi-cm-test-webapp
+    copy:
+      src: "TestWebApp.war"
+      dest: "{{ lookup('env','CATALINA_HOME') }}/webapp"
