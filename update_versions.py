@@ -16,19 +16,21 @@ def get_version_map(confpath):
         return yaml.load(conf_fp)
 
 
-def update_tag_text(tag, text):
-    tag.text = text
+def update_tag_text(tag, new_text):
+    logging.info("Update {0}: {1} => {2}".format(tag.tag, tag.text, new_text))
+    tag.text = new_text
 
 
 def update_dependendecies(pom_tree, config):
     deps_list = pom_tree.findall("*"+POM_NAMESPACE_PREFIX+"dependency")
     for dependency in deps_list:
         #we need update version if dependency version scpecified and artifactId in config
-        artifact = dependency.find(POM_NAMESPACE_PREFIX+"artifactId")
+        artifactId = dependency.find(POM_NAMESPACE_PREFIX+"artifactId")
         version = dependency.find(POM_NAMESPACE_PREFIX+"version")
-        print artifact.text,"=>", version.text
-        if (version is not None and artifact is not None) and artifact.text in config:
-            version.text = config[artifact.text]
+        if (version is not None and artifactId is not None) and artifactId.text in config \
+            and not version.text == config[artifactId.text]:
+            logging.info("Update dependency: "+artifactId.text) 
+            update_tag_text(version, config[artifactId.text])
 
 
 def update_pom(pom_path, version_map):
@@ -36,13 +38,15 @@ def update_pom(pom_path, version_map):
     try:
       tree = xml.parse(pom_path)
     except Exception as e:
-      logging.warning("Error while parsing {0}:{1}".format(pom_path,e))
+      logging.warn("Error while parsing {0}:{1}".format(pom_path,e))
       return
 
-    project_name = tree.find("./"+POM_NAMESPACE_PREFIX+"name").text
+    project_name = tree.find("./"+POM_NAMESPACE_PREFIX+"artifactId").text
     if project_name in version_map:
         project_version_element = tree.find("./"+POM_NAMESPACE_PREFIX+"version")
-        update_tag_text(project_version_element, version_map[project_name])
+        if not project_version_element.text == version_map[project_name]:
+            logging.info("Update version for {0}".format(project_name))
+            update_tag_text(project_version_element, version_map[project_name])
         
         #assume there is no need to update dependencies for not listed projects
         update_dependendecies(tree, version_map)
@@ -51,6 +55,7 @@ def update_pom(pom_path, version_map):
     
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     #TODO: use optparse 
     if len(sys.argv) < 2 :
         config_path = DEFAULT_CONFIG_PATH
